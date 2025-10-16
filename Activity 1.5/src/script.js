@@ -1,8 +1,5 @@
 import * as THREE from 'three'
 
-/**
- * Base
- */
 const canvas = document.querySelector('canvas.webgl')
 const sizes = { width: 800, height: 600 }
 

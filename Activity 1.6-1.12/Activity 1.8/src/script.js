@@ -24,21 +24,12 @@ const parameters = {
     }
 }
 
-/**
- * Base
- */
-// Canvas
 const canvas = document.querySelector('canvas.webgl')
 
-// Scene
 const scene = new THREE.Scene()
 
-/**
- * Morphing Geometric Sculpture
- */
 const sculptureGroup = new THREE.Group()
 
-// Create multiple geometries for morphing
 const geometries = {
     box: new THREE.BoxGeometry(1, 1, 1),
     sphere: new THREE.SphereGeometry(0.7, 32, 32),
@@ -55,7 +46,6 @@ const material = new THREE.MeshStandardMaterial({
     wireframe: parameters.wireframe
 })
 
-// Create the main morphing mesh
 const mesh = new THREE.Mesh(geometries.box, material)
 sculptureGroup.add(mesh)
 

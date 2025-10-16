@@ -1,22 +1,12 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
-/**
- * Base
- */
-// Canvas
 const canvas = document.querySelector('canvas.webgl')
 
-// Scene
 const scene = new THREE.Scene()
 
-/**
- * Crystal Cluster
- */
-// Create multiple crystal geometries
 const crystalGroup = new THREE.Group()
 
-// Main crystal (octahedron)
 const mainCrystal = new THREE.Mesh(
     new THREE.OctahedronGeometry(0.8, 0),
     new THREE.MeshBasicMaterial({ 
@@ -29,7 +19,6 @@ const mainCrystal = new THREE.Mesh(
 mainCrystal.position.y = 0.2
 crystalGroup.add(mainCrystal)
 
-// Add a visible cube
 const cube = new THREE.Mesh(
     new THREE.BoxGeometry(0.6, 0.6, 0.6),
     new THREE.MeshBasicMaterial({ 
@@ -41,8 +30,6 @@ const cube = new THREE.Mesh(
 )
 cube.position.set(0, -0.8, 0)
 crystalGroup.add(cube)
-
-// Secondary crystals (tetrahedrons)
 const crystalColors = [0xff6b6b, 0x4ecdc4, 0x45b7d1, 0xf9ca24, 0xf0932b, 0xeb4d4b]
 const crystalPositions = [
     { x: 0.6, y: -0.3, z: 0.4 },
@@ -71,7 +58,6 @@ crystalPositions.forEach((pos, index) => {
     crystalGroup.add(crystal)
 })
 
-// Add some sparkle particles
 const sparkleGeometry = new THREE.BufferGeometry()
 const sparkleCount = 20
 const sparklePositions = new Float32Array(sparkleCount * 3)
@@ -95,54 +81,36 @@ crystalGroup.add(sparkles)
 
 scene.add(crystalGroup)
 
-/**
- * Sizes
- */
 const sizes = {
     width: window.innerWidth,
     height: window.innerHeight
 }
 
-/**
- * Camera
- */
-// Base camera
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
 camera.position.z = 3
 scene.add(camera)
 
-// Controls
 const controls = new OrbitControls(camera, canvas)
 controls.enableDamping = true
 
-/**
- * Renderer
- */
 const renderer = new THREE.WebGLRenderer({
     canvas: canvas
 })
 renderer.setSize(sizes.width, sizes.height)
 
-/**
- * Animate
- */
 const clock = new THREE.Clock()
 
 const tick = () =>
 {
     const elapsedTime = clock.getElapsedTime()
 
-    // Animate crystal cluster
     crystalGroup.rotation.y = elapsedTime * 0.3
     crystalGroup.rotation.x = Math.sin(elapsedTime * 0.5) * 0.1
-    
-    // Animate individual crystals
     crystalGroup.children.forEach((child, index) => {
         if (child.geometry.type === 'OctahedronGeometry') {
             child.rotation.y = elapsedTime * 0.8
             child.rotation.x = elapsedTime * 0.4
         } else if (child.geometry.type === 'BoxGeometry') {
-            // Animate the cube
             child.rotation.y = elapsedTime * 0.6
             child.rotation.x = elapsedTime * 0.3
             child.rotation.z = elapsedTime * 0.2
@@ -150,7 +118,6 @@ const tick = () =>
             child.rotation.y = elapsedTime * (0.5 + index * 0.1)
             child.rotation.z = Math.sin(elapsedTime + index) * 0.2
         } else if (child.type === 'Points') {
-            // Animate sparkles
             child.rotation.y = elapsedTime * 0.2
             const positions = child.geometry.attributes.position.array
             for(let i = 1; i < positions.length; i += 3) {
@@ -160,13 +127,8 @@ const tick = () =>
         }
     })
 
-    // Update controls
     controls.update()
-
-    // Render
     renderer.render(scene, camera)
-
-    // Call tick again on the next frame
     window.requestAnimationFrame(tick)
 }
 

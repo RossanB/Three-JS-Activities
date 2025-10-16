@@ -78,18 +78,10 @@ const metalnessTexture = textureLoader.load('/textures/door/metalness.jpg')
 const roughnessTexture = textureLoader.load('/textures/door/roughness.jpg')
 
 
-/**
- * Base
- */
-// Canvas
 const canvas = document.querySelector('canvas.webgl')
 
-// Scene
 const scene = new THREE.Scene()
 
-/**
- * Bubble/Metal Objects
- */
 //Environment Map
 const cubeTextureLoader = new THREE.CubeTextureLoader()
 const environmentMapTexture = cubeTextureLoader.load([

@@ -1,29 +1,19 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
-/**
- * Base
- */
-// Canvas
 const canvas = document.querySelector('canvas.webgl')
 
-// Scene
 const scene = new THREE.Scene()
 
-// Galaxy Particle System
 const galaxyGroup = new THREE.Group()
-
-// Create multiple particle systems for different star types
 const starCount = 2000
 const positionsArray = new Float32Array(starCount * 3)
 const colorsArray = new Float32Array(starCount * 3)
 const sizesArray = new Float32Array(starCount)
 
-// Generate star positions in a spiral galaxy pattern
 for(let i = 0; i < starCount; i++) {
     const i3 = i * 3
     
-    // Spiral galaxy distribution
     const radius = Math.random() * 8
     const angle = Math.random() * Math.PI * 2
     const height = (Math.random() - 0.5) * 2
@@ -32,22 +22,18 @@ for(let i = 0; i < starCount; i++) {
     positionsArray[i3 + 1] = height
     positionsArray[i3 + 2] = Math.sin(angle) * radius
     
-    // Star colors (super bright blue giants, white dwarfs, red giants)
     const starType = Math.random()
     if (starType < 0.1) {
-        // Blue giants - super bright
         colorsArray[i3] = 0.8
         colorsArray[i3 + 1] = 0.9
         colorsArray[i3 + 2] = 1.0
         sizesArray[i] = Math.random() * 0.02 + 0.01
     } else if (starType < 0.3) {
-        // White dwarfs - super bright
         colorsArray[i3] = 1.0
         colorsArray[i3 + 1] = 1.0
         colorsArray[i3 + 2] = 1.0
         sizesArray[i] = Math.random() * 0.01 + 0.005
     } else {
-        // Red giants - super bright
         colorsArray[i3] = 1.0
         colorsArray[i3 + 1] = 0.8
         colorsArray[i3 + 2] = 0.6
@@ -71,7 +57,6 @@ const starMaterial = new THREE.PointsMaterial({
 const stars = new THREE.Points(starGeometry, starMaterial)
 galaxyGroup.add(stars)
 
-// Add a central black hole (dark sphere)
 const blackHoleGeometry = new THREE.SphereGeometry(0.3, 32, 32)
 const blackHoleMaterial = new THREE.MeshBasicMaterial({ 
     color: 0x000000,
@@ -81,7 +66,6 @@ const blackHoleMaterial = new THREE.MeshBasicMaterial({
 const blackHole = new THREE.Mesh(blackHoleGeometry, blackHoleMaterial)
 galaxyGroup.add(blackHole)
 
-// Add some nebula clouds (larger particles)
 const nebulaCount = 100
 const nebulaPositions = new Float32Array(nebulaCount * 3)
 const nebulaColors = new Float32Array(nebulaCount * 3)
@@ -95,7 +79,6 @@ for(let i = 0; i < nebulaCount; i++) {
     nebulaPositions[i3 + 1] = (Math.random() - 0.5) * 1.5
     nebulaPositions[i3 + 2] = Math.sin(angle) * radius
     
-    // Nebula colors (super bright purple, pink, blue)
     const nebulaType = Math.random()
     if (nebulaType < 0.33) {
         nebulaColors[i3] = 1.0

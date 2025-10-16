@@ -113,29 +113,152 @@ const pointLight3 = new THREE.PointLight(0xf9ca24, 0.8, 12)
 pointLight3.position.set(0, 5, 0)
 scene.add(pointLight3)
 
+// Try multiple font sources for maximum compatibility
 const fontLoader = new FontLoader()
-fontLoader.load(
-    './helvetiker_regular.typeface.json',
-    (font) => {
-        const textGeometry = new TextGeometry('SWEET', { 
-            font: font,
-            size: 0.4, 
-            height: 0.1, 
-            curveSegments: 12,
-            bevelEnabled: false,
-            bevelThickness: 0.01,
-            bevelSize: 0.01,
-            bevelOffset: 0,
-            bevelSegments: 3
-        })
-        
-        textGeometry.computeBoundingBox()
-        textGeometry.translate(
-            -textGeometry.boundingBox.max.x * 0.5,
-            -textGeometry.boundingBox.max.y * 0.5,
-            -textGeometry.boundingBox.max.z * 0.5
-        )
-        
+
+// Try different font sources in order of reliability
+const fontSources = [
+    'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json',
+    'https://cdn.jsdelivr.net/npm/three@0.150.0/examples/fonts/helvetiker_regular.typeface.json',
+    'https://unpkg.com/three@0.150.0/examples/fonts/helvetiker_regular.typeface.json'
+]
+
+let currentFontIndex = 0
+
+const tryLoadFont = () => {
+    if (currentFontIndex >= fontSources.length) {
+        console.log('All font sources failed, using fallback')
+        createFallbackText()
+        return
+    }
+    
+    console.log(`Trying font source ${currentFontIndex + 1}: ${fontSources[currentFontIndex]}`)
+    
+    fontLoader.load(
+        fontSources[currentFontIndex],
+        (font) => {
+            console.log('Font loaded successfully!')
+            createFontText(font)
+        },
+        undefined,
+        (error) => {
+            console.log(`Font source ${currentFontIndex + 1} failed:`, error)
+            currentFontIndex++
+            tryLoadFont()
+        }
+    )
+}
+
+const createFontText = (font) => {
+    const textGeometry = new TextGeometry('SWEET', { 
+        font: font,
+        size: 0.4, 
+        height: 0.1, 
+        curveSegments: 12,
+        bevelEnabled: false,
+        bevelThickness: 0.01,
+        bevelSize: 0.01,
+        bevelOffset: 0,
+        bevelSegments: 3
+    })
+    
+    textGeometry.computeBoundingBox()
+    textGeometry.translate(
+        -textGeometry.boundingBox.max.x * 0.5,
+        -textGeometry.boundingBox.max.y * 0.5,
+        -textGeometry.boundingBox.max.z * 0.5
+    )
+    
+    const textMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        metalness: 0.1,
+        roughness: 0.0,
+        transmission: 0.8,
+        thickness: 0.5,
+        ior: 1.4,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.0,
+        envMapIntensity: 2.0,
+        transparent: true,
+        opacity: 0.9
+    })
+
+    const text = new THREE.Mesh(textGeometry, textMaterial)
+    text.position.set(0, 0, 0)
+    text.scale.setScalar(3)
+    scene.add(text)
+    
+    const textFolder = gui.addFolder('Sweet Text')
+    textFolder.add(text.position, 'x', -5, 5, 0.1)
+    textFolder.add(text.position, 'y', 0, 6, 0.1)
+    textFolder.add(text.position, 'z', -5, 5, 0.1)
+    textFolder.add(text.rotation, 'y', 0, Math.PI * 2, 0.01)
+    textFolder.add(text.scale, 'x', 0.5, 2, 0.1)
+    textFolder.add(text.scale, 'y', 0.5, 2, 0.1)
+    textFolder.add(text.scale, 'z', 0.5, 2, 0.1)
+    
+    window.textMesh = text
+    createBubbles()
+}
+
+const createFallbackText = () => {
+    const textGroup = new THREE.Group()
+    
+    const letters = [
+        { 
+            char: 'S', 
+            geometries: [
+                new THREE.TorusGeometry(0.25, 0.08, 8, 16),
+                new THREE.BoxGeometry(0.15, 0.08, 0.1)
+            ],
+            positions: [[-1.5, 0, 0], [-1.5, -0.2, 0]],
+            scales: [[1, 1, 1], [1, 0.5, 1]]
+        },
+        { 
+            char: 'W', 
+            geometries: [
+                new THREE.BoxGeometry(0.08, 0.5, 0.1),
+                new THREE.BoxGeometry(0.08, 0.5, 0.1),
+                new THREE.BoxGeometry(0.08, 0.5, 0.1),
+                new THREE.BoxGeometry(0.08, 0.5, 0.1)
+            ],
+            positions: [[-0.9, 0, 0], [-0.8, 0, 0], [-0.7, 0, 0], [-0.6, 0, 0]],
+            scales: [[1, 1, 1], [1, 0.8, 1], [1, 0.6, 1], [1, 1, 1]]
+        },
+        { 
+            char: 'E', 
+            geometries: [
+                new THREE.BoxGeometry(0.08, 0.5, 0.1),
+                new THREE.BoxGeometry(0.2, 0.08, 0.1),
+                new THREE.BoxGeometry(0.15, 0.08, 0.1),
+                new THREE.BoxGeometry(0.2, 0.08, 0.1)
+            ],
+            positions: [[-0.3, 0, 0], [-0.2, 0.2, 0], [-0.2, 0, 0], [-0.2, -0.2, 0]],
+            scales: [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]]
+        },
+        { 
+            char: 'E', 
+            geometries: [
+                new THREE.BoxGeometry(0.08, 0.5, 0.1),
+                new THREE.BoxGeometry(0.2, 0.08, 0.1),
+                new THREE.BoxGeometry(0.15, 0.08, 0.1),
+                new THREE.BoxGeometry(0.2, 0.08, 0.1)
+            ],
+            positions: [[0.3, 0, 0], [0.4, 0.2, 0], [0.4, 0, 0], [0.4, -0.2, 0]],
+            scales: [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]]
+        },
+        { 
+            char: 'T', 
+            geometries: [
+                new THREE.BoxGeometry(0.2, 0.08, 0.1),
+                new THREE.BoxGeometry(0.08, 0.5, 0.1)
+            ],
+            positions: [[0.9, 0.2, 0], [0.9, 0, 0]],
+            scales: [[1, 1, 1], [1, 1, 1]]
+        }
+    ]
+    
+    letters.forEach((letter, index) => {
         const textMaterial = new THREE.MeshPhysicalMaterial({
             color: 0xffffff,
             metalness: 0.1,
@@ -149,77 +272,88 @@ fontLoader.load(
             transparent: true,
             opacity: 0.9
         })
-
-        const text = new THREE.Mesh(textGeometry, textMaterial)
-        text.position.set(0, 0, 0)
-        text.scale.setScalar(3)
-        scene.add(text)
         
-        const textFolder = gui.addFolder('Sweet Text')
-        textFolder.add(text.position, 'x', -5, 5, 0.1)
-        textFolder.add(text.position, 'y', 0, 6, 0.1)
-        textFolder.add(text.position, 'z', -5, 5, 0.1)
-        textFolder.add(text.rotation, 'y', 0, Math.PI * 2, 0.01)
-        textFolder.add(text.scale, 'x', 0.5, 2, 0.1)
-        textFolder.add(text.scale, 'y', 0.5, 2, 0.1)
-        textFolder.add(text.scale, 'z', 0.5, 2, 0.1)
-        
-        window.textMesh = text
-        
-        const bubbleCount = 20
-        const bubbleGeometry = new THREE.SphereGeometry(0.05, 8, 6)
-        const bubbleMaterial = new THREE.MeshPhysicalMaterial({
-            color: 0xffffff,
-            metalness: 0.0,
-            roughness: 0.0,
-            transmission: 0.9,
-            thickness: 0.1,
-            ior: 1.33,
-            clearcoat: 1.0,
-            clearcoatRoughness: 0.0,
-            transparent: true,
-            opacity: 0.6
-        })
-        
-        const bubbleGroup = new THREE.Group()
-        scene.add(bubbleGroup)
-        
-        for (let i = 0; i < bubbleCount; i++) {
-            const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial.clone())
-            
-            const radius = 2 + Math.random() * 3
-            const angle = (i / bubbleCount) * Math.PI * 2
-            bubble.position.set(
-                Math.cos(angle) * radius,
-                (Math.random() - 0.5) * 4,
-                Math.sin(angle) * radius
+        letter.geometries.forEach((geometry, geomIndex) => {
+            const letterMesh = new THREE.Mesh(geometry, textMaterial.clone())
+            letterMesh.position.set(
+                letter.positions[geomIndex][0], 
+                letter.positions[geomIndex][1], 
+                letter.positions[geomIndex][2]
             )
-            
-            bubble.scale.setScalar(0.5 + Math.random() * 1.5)
-            
-            bubble.userData = {
-                originalY: bubble.position.y,
-                floatSpeed: 0.5 + Math.random() * 1,
-                floatAmplitude: 0.3 + Math.random() * 0.5,
-                rotationSpeed: (Math.random() - 0.5) * 0.02
-            }
-            
-            bubbleGroup.add(bubble)
+            letterMesh.scale.set(
+                letter.scales[geomIndex][0], 
+                letter.scales[geomIndex][1], 
+                letter.scales[geomIndex][2]
+            )
+            letterMesh.scale.multiplyScalar(2)
+            textGroup.add(letterMesh)
+        })
+    })
+    
+    textGroup.position.set(0, 0, 0)
+    textGroup.scale.setScalar(1.5)
+    scene.add(textGroup)
+    
+    const textFolder = gui.addFolder('Sweet Text')
+    textFolder.add(textGroup.position, 'x', -5, 5, 0.1)
+    textFolder.add(textGroup.position, 'y', 0, 6, 0.1)
+    textFolder.add(textGroup.position, 'z', -5, 5, 0.1)
+    textFolder.add(textGroup.rotation, 'y', 0, Math.PI * 2, 0.01)
+    textFolder.add(textGroup.scale, 'x', 0.5, 2, 0.1)
+    textFolder.add(textGroup.scale, 'y', 0.5, 2, 0.1)
+    textFolder.add(textGroup.scale, 'z', 0.5, 2, 0.1)
+    
+    window.textMesh = textGroup
+    createBubbles()
+}
+
+const createBubbles = () => {
+    const bubbleCount = 20
+    const bubbleGeometry = new THREE.SphereGeometry(0.05, 8, 6)
+    const bubbleMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        metalness: 0.0,
+        roughness: 0.0,
+        transmission: 0.9,
+        thickness: 0.1,
+        ior: 1.33,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.0,
+        transparent: true,
+        opacity: 0.6
+    })
+    
+    const bubbleGroup = new THREE.Group()
+    scene.add(bubbleGroup)
+    
+    for (let i = 0; i < bubbleCount; i++) {
+        const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial.clone())
+        
+        const radius = 2 + Math.random() * 3
+        const angle = (i / bubbleCount) * Math.PI * 2
+        bubble.position.set(
+            Math.cos(angle) * radius,
+            (Math.random() - 0.5) * 4,
+            Math.sin(angle) * radius
+        )
+        
+        bubble.scale.setScalar(0.5 + Math.random() * 1.5)
+        
+        bubble.userData = {
+            originalY: bubble.position.y,
+            floatSpeed: 0.5 + Math.random() * 1,
+            floatAmplitude: 0.3 + Math.random() * 0.5,
+            rotationSpeed: (Math.random() - 0.5) * 0.02
         }
         
-        window.bubbleGroup = bubbleGroup
-    },
-    undefined,
-    (error) => {
-        const fallbackGeometry = new THREE.BoxGeometry(2, 0.5, 0.2)
-        const fallbackMaterial = new THREE.MeshBasicMaterial({ color: 0xff6b6b })
-        const fallbackText = new THREE.Mesh(fallbackGeometry, fallbackMaterial)
-        fallbackText.position.set(0, 0, 0)
-        fallbackText.scale.setScalar(2)
-        scene.add(fallbackText)
-        window.textMesh = fallbackText
+        bubbleGroup.add(bubble)
     }
-)
+    
+    window.bubbleGroup = bubbleGroup
+}
+
+// Start trying to load fonts
+tryLoadFont()
 
 
 
@@ -310,10 +444,12 @@ const tick = () => {
         window.textMesh.rotation.x = Math.sin(elapsedTime * 0.8) * 0.1
         window.textMesh.rotation.z = Math.cos(elapsedTime * 0.6) * 0.05
         
-        const hue = (elapsedTime * 0.2) % 1
-        window.textMesh.material.color.setHSL(hue, 0.8, 0.7)
-        
-        window.textMesh.material.thickness = 0.3 + Math.sin(elapsedTime * 2) * 0.2
+        // Animate each letter's material
+        window.textMesh.children.forEach((letter, index) => {
+            const hue = (elapsedTime * 0.2 + index * 0.1) % 1
+            letter.material.color.setHSL(hue, 0.8, 0.7)
+            letter.material.thickness = 0.3 + Math.sin(elapsedTime * 2 + index) * 0.2
+        })
     }
     
     if (window.bubbleGroup) {
