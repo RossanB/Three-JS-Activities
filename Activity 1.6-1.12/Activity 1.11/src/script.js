@@ -113,28 +113,22 @@ const pointLight3 = new THREE.PointLight(0xf9ca24, 0.8, 12)
 pointLight3.position.set(0, 5, 0)
 scene.add(pointLight3)
 
-/**
- * Sweet 3D Text
- */
 const fontLoader = new FontLoader()
 fontLoader.load(
     './helvetiker_regular.typeface.json',
     (font) => {
-        console.log('Font loaded successfully:', font)
-        
         const textGeometry = new TextGeometry('SWEET', { 
             font: font,
             size: 0.4, 
             height: 0.1, 
             curveSegments: 12,
-            bevelEnabled: false, // Disable bevel for cleaner look
+            bevelEnabled: false,
             bevelThickness: 0.01,
             bevelSize: 0.01,
             bevelOffset: 0,
             bevelSegments: 3
         })
         
-        // Properly center the geometry
         textGeometry.computeBoundingBox()
         textGeometry.translate(
             -textGeometry.boundingBox.max.x * 0.5,
@@ -142,14 +136,13 @@ fontLoader.load(
             -textGeometry.boundingBox.max.z * 0.5
         )
         
-        // Create bubble-like text material with iridescent effect
         const textMaterial = new THREE.MeshPhysicalMaterial({
-            color: 0xffffff, // White base
+            color: 0xffffff,
             metalness: 0.1,
             roughness: 0.0,
-            transmission: 0.8, // Glass-like transparency
+            transmission: 0.8,
             thickness: 0.5,
-            ior: 1.4, // Index of refraction for glass
+            ior: 1.4,
             clearcoat: 1.0,
             clearcoatRoughness: 0.0,
             envMapIntensity: 2.0,
@@ -158,15 +151,10 @@ fontLoader.load(
         })
 
         const text = new THREE.Mesh(textGeometry, textMaterial)
-        text.position.set(0, 0, 0) // Center in the middle of the scene
-        text.scale.setScalar(3) // Make it bigger
+        text.position.set(0, 0, 0)
+        text.scale.setScalar(3)
         scene.add(text)
         
-        console.log('SWEET text added to scene at position:', text.position)
-        console.log('Text geometry bounding box:', textGeometry.boundingBox)
-        console.log('Text geometry vertices count:', textGeometry.attributes.position.count)
-        
-        // Add GUI controls for text
         const textFolder = gui.addFolder('Sweet Text')
         textFolder.add(text.position, 'x', -5, 5, 0.1)
         textFolder.add(text.position, 'y', 0, 6, 0.1)
@@ -176,10 +164,8 @@ fontLoader.load(
         textFolder.add(text.scale, 'y', 0.5, 2, 0.1)
         textFolder.add(text.scale, 'z', 0.5, 2, 0.1)
         
-        // Store text reference for animation
         window.textMesh = text
         
-        // Create bubble particles around the text
         const bubbleCount = 20
         const bubbleGeometry = new THREE.SphereGeometry(0.05, 8, 6)
         const bubbleMaterial = new THREE.MeshPhysicalMaterial({
@@ -188,7 +174,7 @@ fontLoader.load(
             roughness: 0.0,
             transmission: 0.9,
             thickness: 0.1,
-            ior: 1.33, // Water-like refraction
+            ior: 1.33,
             clearcoat: 1.0,
             clearcoatRoughness: 0.0,
             transparent: true,
@@ -198,11 +184,9 @@ fontLoader.load(
         const bubbleGroup = new THREE.Group()
         scene.add(bubbleGroup)
         
-        // Create floating bubbles
         for (let i = 0; i < bubbleCount; i++) {
             const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial.clone())
             
-            // Random positions around the text
             const radius = 2 + Math.random() * 3
             const angle = (i / bubbleCount) * Math.PI * 2
             bubble.position.set(
@@ -211,10 +195,8 @@ fontLoader.load(
                 Math.sin(angle) * radius
             )
             
-            // Random sizes
             bubble.scale.setScalar(0.5 + Math.random() * 1.5)
             
-            // Store animation data
             bubble.userData = {
                 originalY: bubble.position.y,
                 floatSpeed: 0.5 + Math.random() * 1,
@@ -225,14 +207,10 @@ fontLoader.load(
             bubbleGroup.add(bubble)
         }
         
-        // Store bubble group for animation
         window.bubbleGroup = bubbleGroup
     },
     undefined,
     (error) => {
-        console.error('An error occurred while loading the font:', error)
-        
-        // Fallback: Create a simple text using basic geometry
         const fallbackGeometry = new THREE.BoxGeometry(2, 0.5, 0.2)
         const fallbackMaterial = new THREE.MeshBasicMaterial({ color: 0xff6b6b })
         const fallbackText = new THREE.Mesh(fallbackGeometry, fallbackMaterial)
@@ -240,7 +218,6 @@ fontLoader.load(
         fallbackText.scale.setScalar(2)
         scene.add(fallbackText)
         window.textMesh = fallbackText
-        console.log('Fallback text added due to font loading error')
     }
 )
 
@@ -323,50 +300,39 @@ const tick = () => {
         donut.scale.setScalar(pulse)
     })
     
-    // Animate sweet text with bubble effects
     if (window.textMesh) {
         window.textMesh.rotation.y = elapsedTime * 0.3
         window.textMesh.position.y = Math.sin(elapsedTime * 1.2) * 0.5
         
-        // Bubble pulsing effect (like breathing)
         const bubblePulse = 3 + Math.sin(elapsedTime * 1.5) * 0.3
         window.textMesh.scale.setScalar(bubblePulse)
         
-        // Bubble wobble effect
         window.textMesh.rotation.x = Math.sin(elapsedTime * 0.8) * 0.1
         window.textMesh.rotation.z = Math.cos(elapsedTime * 0.6) * 0.05
         
-        // Iridescent color shift
         const hue = (elapsedTime * 0.2) % 1
         window.textMesh.material.color.setHSL(hue, 0.8, 0.7)
         
-        // Bubble thickness animation
         window.textMesh.material.thickness = 0.3 + Math.sin(elapsedTime * 2) * 0.2
     }
     
-    // Animate bubble particles
     if (window.bubbleGroup) {
         window.bubbleGroup.children.forEach((bubble, index) => {
-            // Floating animation
             bubble.position.y = bubble.userData.originalY + 
                 Math.sin(elapsedTime * bubble.userData.floatSpeed + index) * bubble.userData.floatAmplitude
             
-            // Gentle rotation
             bubble.rotation.x += bubble.userData.rotationSpeed
             bubble.rotation.y += bubble.userData.rotationSpeed * 0.7
             bubble.rotation.z += bubble.userData.rotationSpeed * 0.3
             
-            // Gentle pulsing
             const pulse = 1 + Math.sin(elapsedTime * 1.5 + index) * 0.1
             bubble.scale.setScalar(pulse * (0.5 + Math.random() * 1.5))
             
-            // Iridescent color shift for bubbles
             const bubbleHue = (elapsedTime * 0.3 + index * 0.1) % 1
             bubble.material.color.setHSL(bubbleHue, 0.6, 0.8)
         })
     }
     
-    // Animate colorful lights
     pointLight1.position.x = -5 + Math.sin(elapsedTime * 0.4) * 2
     pointLight1.position.z = 5 + Math.cos(elapsedTime * 0.4) * 2
     
