@@ -1,0 +1,21 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: linear-gradient(135deg, #fcfcff 0%, #f7f9ff 100%);
+  font-family: 'Arial', sans-serif;
+}
+
+canvas {
+  display: block;
+  outline: none;
+}
